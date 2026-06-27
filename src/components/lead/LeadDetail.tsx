@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useLeadStore } from "@/context/LeadStore";
 import { ChannelIcon } from "@/components/inbox/ChannelIcon";
+import { Avatar } from "@/components/ui/Avatar";
 import { DraftReply } from "./DraftReply";
 import { LeadSummaryPanel } from "./LeadSummaryPanel";
 import { StatusStepper } from "./StatusStepper";
@@ -22,7 +23,6 @@ export function LeadDetail({ lead }: LeadDetailProps) {
     isAnalyzing,
     aiLive,
   } = useLeadStore();
-  const [pasteMessage, setPasteMessage] = useState("");
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [quoteAmount, setQuoteAmount] = useState(
     lead.summary?.estimatedValue.min ?? 550,
@@ -33,60 +33,40 @@ export function LeadDetail({ lead }: LeadDetailProps) {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-5">
-        <div>
-          <StatusStepper status={lead.status} />
-        </div>
+        <StatusStepper status={lead.status} />
 
-        <div className="rounded-xl border border-[var(--geist-border)] bg-[var(--geist-background-secondary)] p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-[var(--geist-foreground)]">
-              {lead.customerName}
-            </h2>
-            <span className="text-xs text-[var(--geist-foreground-secondary)]">
-              {relativeTime(lead.createdAt)}
-            </span>
+        <div className="glass-panel rounded-xl p-5">
+          <div className="flex items-start gap-4">
+            <Avatar name={lead.customerName} size="lg" />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start justify-between gap-2">
+                <h2 className="text-lg font-semibold">{lead.customerName}</h2>
+                <span className="shrink-0 text-xs text-[var(--geist-foreground-secondary)]">
+                  {relativeTime(lead.createdAt)}
+                </span>
+              </div>
+              <div className="mt-2">
+                <ChannelIcon channel={lead.channel} />
+              </div>
+            </div>
           </div>
-          <div className="mt-2">
-            <ChannelIcon channel={lead.channel} />
-          </div>
-          <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-[var(--geist-foreground-secondary)]">
-            {lead.rawMessage}
-          </p>
-        </div>
-
-        {!summary && (
-          <div className="rounded-xl border border-[var(--geist-border)] bg-[var(--geist-background-secondary)] p-5">
-            <p className="text-xs font-medium uppercase tracking-wide text-[var(--geist-foreground-secondary)]">
-              Paste customer message
+          <div className="mt-4 rounded-lg bg-black/20 p-4">
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--geist-foreground-secondary)]">
+              {lead.rawMessage}
             </p>
-            <textarea
-              value={pasteMessage}
-              onChange={(e) => setPasteMessage(e.target.value)}
-              placeholder="Paste a customer message to analyze…"
-              rows={3}
-              className="mt-2 w-full rounded-lg border border-[var(--geist-border)] bg-[var(--geist-background)] px-3 py-2 text-sm text-[var(--geist-foreground)]"
-            />
-            <button
-              type="button"
-              onClick={() => analyzeLeadById(lead.id)}
-              disabled={isAnalyzing}
-              className="mt-3 rounded-lg bg-[var(--geist-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
-            >
-              {isAnalyzing ? "Analyzing…" : "Analyze"}
-            </button>
           </div>
-        )}
+        </div>
       </div>
 
       <div className="space-y-5">
         {aiLive === false && summary && (
-          <p className="rounded-lg border border-amber-800/30 bg-amber-950/20 px-3 py-2 text-xs text-amber-300">
-            Using mock AI — add ANTHROPIC_API_KEY to .env.local for live analysis.
+          <p className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-400">
+            Mock AI active — add ANTHROPIC_API_KEY for live analysis
           </p>
         )}
         {aiLive === true && (
-          <p className="rounded-lg border border-emerald-800/30 bg-emerald-950/20 px-3 py-2 text-xs text-emerald-300">
-            Live AI analysis enabled.
+          <p className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-400">
+            Live AI analysis enabled
           </p>
         )}
 
@@ -100,7 +80,7 @@ export function LeadDetail({ lead }: LeadDetailProps) {
                 <button
                   type="button"
                   onClick={() => sendReply(lead.id)}
-                  className="rounded-lg bg-[var(--geist-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+                  className="btn-primary"
                 >
                   Send reply
                 </button>
@@ -109,7 +89,7 @@ export function LeadDetail({ lead }: LeadDetailProps) {
                 <button
                   type="button"
                   onClick={() => markReadyToBook(lead.id)}
-                  className="rounded-lg border border-[var(--geist-border-strong)] px-4 py-2 text-sm font-medium text-[var(--geist-foreground)] hover:bg-[var(--geist-border)]"
+                  className="btn-secondary"
                 >
                   Mark ready to book
                 </button>
@@ -118,7 +98,7 @@ export function LeadDetail({ lead }: LeadDetailProps) {
                 <button
                   type="button"
                   onClick={() => setShowQuoteModal(true)}
-                  className="rounded-lg border border-[var(--geist-border-strong)] px-4 py-2 text-sm font-medium text-[var(--geist-foreground)] hover:bg-[var(--geist-border)]"
+                  className="btn-secondary"
                 >
                   Create quote
                 </button>
@@ -126,15 +106,15 @@ export function LeadDetail({ lead }: LeadDetailProps) {
             </div>
           </>
         ) : (
-          <div className="rounded-xl border border-dashed border-[var(--geist-border)] p-8 text-center">
+          <div className="glass-panel rounded-xl border-dashed p-10 text-center">
             <p className="text-sm text-[var(--geist-foreground-secondary)]">
-              Run AI analysis to see summary and draft reply.
+              Run AI analysis to generate summary and draft reply
             </p>
             <button
               type="button"
               onClick={() => analyzeLeadById(lead.id)}
               disabled={isAnalyzing}
-              className="mt-4 rounded-lg bg-[var(--geist-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+              className="btn-primary mt-5"
             >
               {isAnalyzing ? "Analyzing…" : "Analyze lead"}
             </button>
@@ -143,22 +123,24 @@ export function LeadDetail({ lead }: LeadDetailProps) {
       </div>
 
       {showQuoteModal && summary && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md rounded-xl border border-[var(--geist-border)] bg-[var(--geist-background-secondary)] p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="glass-panel w-full max-w-md rounded-2xl p-6">
             <h3 className="text-lg font-semibold">Create quote</h3>
             <p className="mt-1 text-sm text-[var(--geist-foreground-secondary)]">
               {summary.service} for {lead.customerName}
             </p>
-            <label className="mt-4 block text-sm">
-              Amount
+            <label className="mt-5 block text-sm">
+              <span className="text-[var(--geist-foreground-secondary)]">
+                Amount
+              </span>
               <input
                 type="number"
                 value={quoteAmount}
                 onChange={(e) => setQuoteAmount(Number(e.target.value))}
-                className="mt-1 w-full rounded-lg border border-[var(--geist-border)] bg-[var(--geist-background)] px-3 py-2 tabular-nums"
+                className="input-field mt-1.5 tabular-nums"
               />
             </label>
-            <div className="mt-4 flex gap-2">
+            <div className="mt-5 flex gap-2">
               <button
                 type="button"
                 onClick={() => {
@@ -170,14 +152,14 @@ export function LeadDetail({ lead }: LeadDetailProps) {
                   });
                   setShowQuoteModal(false);
                 }}
-                className="rounded-lg bg-[var(--geist-accent)] px-4 py-2 text-sm font-medium text-white"
+                className="btn-primary"
               >
                 Add to pipeline
               </button>
               <button
                 type="button"
                 onClick={() => setShowQuoteModal(false)}
-                className="rounded-lg border border-[var(--geist-border)] px-4 py-2 text-sm"
+                className="btn-secondary"
               >
                 Cancel
               </button>

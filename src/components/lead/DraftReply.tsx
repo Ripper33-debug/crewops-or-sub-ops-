@@ -4,12 +4,15 @@ interface DraftReplyProps {
 
 export function DraftReply({ draft }: DraftReplyProps) {
   return (
-    <div className="rounded-xl border border-[var(--geist-border)] bg-[var(--geist-background-secondary)] p-5">
-      <p className="text-xs font-medium uppercase tracking-wide text-[var(--geist-foreground-secondary)]">
+    <div className="glass-panel rounded-xl p-5">
+      <p className="text-[11px] font-medium uppercase tracking-wider text-[var(--geist-foreground-secondary)]">
         AI draft reply
       </p>
-      <p className="mt-3 text-sm leading-relaxed text-[var(--geist-foreground)]">
-        &ldquo;{draft}&rdquo;
+      <blockquote className="mt-3 border-l-2 border-sky-500/50 pl-4 text-sm leading-relaxed text-[var(--geist-foreground)]">
+        {draft}
+      </blockquote>
+      <p className="mt-3 text-[11px] text-[var(--geist-foreground-secondary)]">
+        Ready to send via SMS or email
       </p>
     </div>
   );

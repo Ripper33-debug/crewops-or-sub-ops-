@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useLeadStore } from "@/context/LeadStore";
+import { IconPlus } from "@/components/ui/Icons";
 
 interface SimulateLeadModalProps {
   open: boolean;
@@ -39,43 +40,50 @@ export function SimulateLeadModal({ open, onClose }: SimulateLeadModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-lg rounded-xl border border-[var(--geist-border)] bg-[var(--geist-background-secondary)] p-6">
-        <h2 className="text-lg font-semibold">Simulate new lead</h2>
-        <p className="mt-1 text-sm text-[var(--geist-foreground-secondary)]">
-          Demo the full flow: lead → AI summary → reply → quote
-        </p>
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+      <div className="glass-panel w-full max-w-lg rounded-2xl p-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/15 text-sky-400">
+            <IconPlus className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold">Simulate new lead</h2>
+            <p className="text-sm text-[var(--geist-foreground-secondary)]">
+              Demo: lead → AI summary → reply → quote
+            </p>
+          </div>
+        </div>
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <label className="block text-sm">
-            Customer name
+            <span className="text-[var(--geist-foreground-secondary)]">
+              Customer name
+            </span>
             <input
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-[var(--geist-border)] bg-[var(--geist-background)] px-3 py-2"
+              className="input-field mt-1.5"
             />
           </label>
           <label className="block text-sm">
-            Message
+            <span className="text-[var(--geist-foreground-secondary)]">
+              Message
+            </span>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={4}
-              className="mt-1 w-full rounded-lg border border-[var(--geist-border)] bg-[var(--geist-background)] px-3 py-2"
+              className="input-field mt-1.5 resize-none"
             />
           </label>
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-2">
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-lg bg-[var(--geist-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+              className="btn-primary"
             >
               {submitting ? "Creating…" : "Create & analyze"}
             </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg border border-[var(--geist-border)] px-4 py-2 text-sm"
-            >
+            <button type="button" onClick={onClose} className="btn-secondary">
               Cancel
             </button>
           </div>

@@ -7,37 +7,37 @@ export const LABEL_META: Record<
   emergency: {
     label: "Emergency",
     className:
-      "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300",
+      "bg-red-500/15 text-red-400 ring-1 ring-red-500/25",
     sortOrder: 0,
   },
   hot_lead: {
     label: "Hot lead",
     className:
-      "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300",
+      "bg-orange-500/15 text-orange-400 ring-1 ring-orange-500/25",
     sortOrder: 1,
   },
   needs_quote: {
     label: "Needs quote",
     className:
-      "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300",
+      "bg-sky-500/15 text-sky-400 ring-1 ring-sky-500/25",
     sortOrder: 2,
   },
   follow_up: {
-    label: "Follow-up needed",
+    label: "Follow-up",
     className:
-      "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
+      "bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/25",
     sortOrder: 3,
   },
   price_shopper: {
     label: "Price shopper",
     className:
-      "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+      "bg-zinc-500/15 text-zinc-400 ring-1 ring-zinc-500/25",
     sortOrder: 4,
   },
   bad_fit: {
     label: "Bad fit",
     className:
-      "bg-zinc-100 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-500",
+      "bg-zinc-600/10 text-zinc-500 ring-1 ring-zinc-600/20",
     sortOrder: 5,
   },
 };
