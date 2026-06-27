@@ -6,7 +6,7 @@ export default function InboxPage() {
     <>
       <PageHeader
         title="Inbox"
-        subtitle="All leads in one place — AI-labeled and ready for action"
+        subtitle="All leads in one list, sorted by urgency"
       />
       <div className="p-6">
         <LeadList />

@@ -6,7 +6,7 @@ export default function QuotesPage() {
     <>
       <PageHeader
         title="Quote Follow-Up Pipeline"
-        subtitle="Open quotes and AI-recommended next actions"
+        subtitle="Open quotes and suggested follow-ups"
       />
       <div className="p-6">
         <QuotePipelineTable />

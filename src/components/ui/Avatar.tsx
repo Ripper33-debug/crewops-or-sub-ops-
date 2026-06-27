@@ -1,18 +1,3 @@
-const COLORS = [
-  "from-sky-500 to-blue-600",
-  "from-emerald-500 to-teal-600",
-  "from-violet-500 to-purple-600",
-  "from-amber-500 to-orange-600",
-  "from-rose-500 to-pink-600",
-  "from-cyan-500 to-sky-600",
-];
-
-function hashName(name: string): number {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
-  return Math.abs(h);
-}
-
 export function Avatar({
   name,
   size = "md",
@@ -26,13 +11,16 @@ export function Avatar({
     .join("")
     .slice(0, 2)
     .toUpperCase();
-  const gradient = COLORS[hashName(name) % COLORS.length];
   const sizeClass =
-    size === "sm" ? "h-8 w-8 text-xs" : size === "lg" ? "h-12 w-12 text-base" : "h-10 w-10 text-sm";
+    size === "sm"
+      ? "h-8 w-8 text-xs"
+      : size === "lg"
+        ? "h-11 w-11 text-sm"
+        : "h-9 w-9 text-xs";
 
   return (
     <div
-      className={`flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br font-semibold text-white shadow-md ${gradient} ${sizeClass}`}
+      className={`flex shrink-0 items-center justify-center rounded-full border border-[var(--geist-border)] bg-[var(--geist-background)] font-medium text-[var(--geist-foreground-secondary)] ${sizeClass}`}
       aria-hidden
     >
       {initials}

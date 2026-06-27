@@ -2,32 +2,19 @@ interface StatCardProps {
   label: string;
   value: string | number;
   sub?: string;
-  accent?: string;
-  icon?: React.ReactNode;
 }
 
-export function StatCard({
-  label,
-  value,
-  sub,
-  accent,
-  icon,
-}: StatCardProps) {
+export function StatCard({ label, value, sub }: StatCardProps) {
   return (
-    <div className="glass-panel rounded-xl p-5">
-      <div className="flex items-start justify-between">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-[var(--geist-foreground-secondary)]">
-          {label}
-        </p>
-        {icon}
-      </div>
-      <p
-        className={`mt-2 font-mono text-3xl font-semibold tabular-nums tracking-tight ${accent ?? "text-[var(--geist-foreground)]"}`}
-      >
+    <div className="panel p-4">
+      <p className="text-xs text-[var(--geist-foreground-secondary)]">
+        {label}
+      </p>
+      <p className="mt-1 font-mono text-2xl font-medium tabular-nums">
         {value}
       </p>
       {sub && (
-        <p className="mt-1.5 text-xs text-[var(--geist-foreground-secondary)]">
+        <p className="mt-1 text-xs text-[var(--geist-foreground-secondary)]">
           {sub}
         </p>
       )}

@@ -10,23 +10,23 @@ export function StatusStepper({ status }: { status: LeadStatus }) {
   );
 
   return (
-    <div className="glass-panel rounded-xl p-4">
-      <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-[var(--geist-foreground-secondary)]">
-        Pipeline status
+    <div className="panel p-4">
+      <p className="mb-3 text-xs text-[var(--geist-foreground-secondary)]">
+        Status
       </p>
-      <ol className="flex flex-wrap gap-2">
+      <ol className="flex flex-wrap gap-1.5">
         {STATUS_STEPS.map((step, idx) => {
           const done = idx <= currentIdx;
           const active = idx === currentIdx;
           return (
             <li
               key={step}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all ${
+              className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs ${
                 active
-                  ? "bg-sky-500 text-white shadow-lg shadow-sky-500/25"
+                  ? "bg-[var(--geist-foreground)] text-[var(--geist-background)]"
                   : done
-                    ? "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/25"
-                    : "bg-white/[0.03] text-[var(--geist-foreground-secondary)] ring-1 ring-[var(--geist-border)]"
+                    ? "border border-[var(--geist-border)] text-[var(--geist-foreground-secondary)]"
+                    : "text-[var(--geist-foreground-secondary)]"
               }`}
             >
               {done && !active && <IconCheck className="h-3 w-3" />}

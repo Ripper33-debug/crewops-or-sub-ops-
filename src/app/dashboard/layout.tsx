@@ -4,7 +4,7 @@ import { useState } from "react";
 import { LeadStoreProvider, useLeadStore } from "@/context/LeadStore";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { SimulateLeadModal } from "@/components/demo/SimulateLeadModal";
-import { IconPlus, IconSparkle } from "@/components/ui/Icons";
+import { IconPlus } from "@/components/ui/Icons";
 import { money } from "@/lib/format";
 
 function TopBar({ onSimulate }: { onSimulate: () => void }) {
@@ -12,25 +12,21 @@ function TopBar({ onSimulate }: { onSimulate: () => void }) {
   const urgent = leads.filter((l) => l.label === "emergency").length;
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--geist-border)] px-6 py-3">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="flex items-center justify-between border-b border-[var(--geist-border)] px-5 py-2.5">
+      <div className="flex items-center gap-4 text-xs text-[var(--geist-foreground-secondary)]">
+        <span>{leads.length} leads</span>
         {urgent > 0 && (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs font-medium text-red-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
+          <span className="text-[var(--geist-foreground)]">
             {urgent} emergency
           </span>
         )}
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--geist-border)] bg-white/[0.03] px-3 py-1 text-xs text-[var(--geist-foreground-secondary)]">
-          <IconSparkle className="h-3 w-3 text-sky-400" />
-          {leads.length} leads in pipeline
-        </span>
-        <span className="hidden font-mono text-xs tabular-nums text-emerald-400 sm:inline">
+        <span className="font-mono tabular-nums">
           {money(briefStats.estimatedOpenRevenue)} open
         </span>
       </div>
       <button type="button" onClick={onSimulate} className="btn-primary">
-        <IconPlus className="h-4 w-4" />
-        Simulate new lead
+        <IconPlus className="h-3.5 w-3.5" />
+        New lead
       </button>
     </div>
   );
@@ -41,7 +37,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <div className="dark-dashboard dashboard-grid flex min-h-screen bg-[var(--geist-background)]">
+      <div className="dark-dashboard flex min-h-screen bg-[var(--geist-background)]">
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <TopBar onSimulate={() => setModalOpen(true)} />

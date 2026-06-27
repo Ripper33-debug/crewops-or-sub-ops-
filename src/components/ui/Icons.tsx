@@ -1,22 +1,9 @@
-export function LogoMark({ className = "h-8 w-8" }: { className?: string }) {
+export function LogoMark({ className = "h-7 w-7" }: { className?: string }) {
   return (
     <div
-      className={`flex shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-sky-400 to-cyan-600 shadow-lg shadow-sky-500/20 ${className}`}
+      className={`flex shrink-0 items-center justify-center rounded-md border border-[var(--geist-border-strong)] bg-[var(--geist-background-secondary)] font-mono text-[10px] font-semibold tracking-tighter ${className}`}
     >
-      <svg viewBox="0 0 24 24" fill="none" className="h-[55%] w-[55%] text-white">
-        <path
-          d="M12 3L4 9v8l8 4 8-4V9l-8-6z"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M12 12l8-4M12 12v9M12 12L4 8"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-      </svg>
+      CP
     </div>
   );
 }
@@ -40,15 +27,7 @@ export function IconQuotes({ className = "h-4 w-4" }: { className?: string }) {
 export function IconBrief({ className = "h-4 w-4" }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
-    </svg>
-  );
-}
-
-export function IconSparkle({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-      <path d="M9.813 2.625a1.125 1.125 0 012.25 0l.256 1.545a1.125 1.125 0 001.664.664l1.545-.256a1.125 1.125 0 011.664 1.664l-.256 1.545a1.125 1.125 0 00.664 1.664l1.545.256a1.125 1.125 0 010 2.25l-1.545.256a1.125 1.125 0 00-.664 1.664l.256 1.545a1.125 1.125 0 01-1.664 1.664l-1.545-.256a1.125 1.125 0 00-1.664.664l-.256 1.545a1.125 1.125 0 01-2.25 0l-.256-1.545a1.125 1.125 0 00-1.664-.664l-1.545.256a1.125 1.125 0 01-1.664-1.664l.256-1.545a1.125 1.125 0 00-.664-1.664l-1.545-.256a1.125 1.125 0 010-2.25l1.545-.256a1.125 1.125 0 00.664-1.664l-.256-1.545a1.125 1.125 0 011.664-1.664l1.545.256a1.125 1.125 0 001.664-.664l.256-1.545zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
     </svg>
   );
 }
@@ -57,14 +36,6 @@ export function IconPlus({ className = "h-4 w-4" }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-    </svg>
-  );
-}
-
-export function IconArrowRight({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
     </svg>
   );
 }
