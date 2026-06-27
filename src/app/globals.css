@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+:root {
+  --geist-background: #fafafa;
+  --geist-background-secondary: #ffffff;
+  --geist-foreground: #171717;
+  --geist-foreground-secondary: #666666;
+  --geist-border: rgba(0, 0, 0, 0.08);
+  --geist-border-strong: rgba(0, 0, 0, 0.15);
+  --geist-accent: #0070f3;
+}
+
+.dark-dashboard {
+  --geist-background: #000000;
+  --geist-background-secondary: #0a0a0a;
+  --geist-foreground: #ededed;
+  --geist-foreground-secondary: #a1a1a1;
+  --geist-border: rgba(255, 255, 255, 0.08);
+  --geist-border-strong: rgba(255, 255, 255, 0.15);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--geist-background);
+  --color-foreground: var(--geist-foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--geist-background);
+  color: var(--geist-foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
