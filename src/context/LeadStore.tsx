@@ -4,11 +4,12 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
-import { analyzeLead } from "@/lib/ai/analyze-lead";
+import { isDemoModeClient } from "@/lib/env-client";
 import {
   BASE_OPEN_REVENUE,
   MAINTENANCE_DUE_COUNT,
@@ -16,6 +17,7 @@ import {
   SEED_LEADS,
   SEED_QUOTES,
 } from "@/lib/mock-data";
+import { quoteAiAction } from "@/lib/db/mappers";
 import type {
   BriefAction,
   BriefStats,
@@ -29,16 +31,18 @@ import type {
 interface LeadStoreValue {
   leads: Lead[];
   quotes: Quote[];
+  loading: boolean;
+  refresh: () => Promise<void>;
   getLead: (id: string) => Lead | undefined;
-  createLead: (input: CreateLeadInput) => Lead;
+  createLead: (input: CreateLeadInput) => Promise<Lead>;
   analyzeLeadById: (
     id: string,
     override?: { rawMessage: string; customerName: string },
   ) => Promise<void>;
-  analyzeMessage: (message: string, customerName?: string) => Promise<LeadAnalysis>;
-  sendReply: (id: string) => void;
-  markReadyToBook: (id: string) => void;
-  createQuote: (input: CreateQuoteInput) => Quote;
+  sendReply: (id: string) => Promise<void>;
+  markReadyToBook: (id: string) => Promise<void>;
+  createQuote: (input: CreateQuoteInput) => Promise<Quote>;
+  sendQuoteFollowUp: (quoteId: string) => Promise<void>;
   briefStats: BriefStats;
   briefActions: BriefAction[];
   isAnalyzing: boolean;
@@ -46,10 +50,6 @@ interface LeadStoreValue {
 }
 
 const LeadStoreContext = createContext<LeadStoreValue | null>(null);
-
-function generateId(prefix: string): string {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-}
 
 function sortLeads(leads: Lead[]): Lead[] {
   const order: Record<string, number> = {
@@ -68,43 +68,83 @@ function sortLeads(leads: Lead[]): Lead[] {
 }
 
 export function LeadStoreProvider({ children }: { children: ReactNode }) {
-  const [leads, setLeads] = useState<Lead[]>(() => sortLeads(SEED_LEADS));
-  const [quotes, setQuotes] = useState<Quote[]>(SEED_QUOTES);
+  const demo = isDemoModeClient();
+  const [leads, setLeads] = useState<Lead[]>(demo ? sortLeads(SEED_LEADS) : []);
+  const [quotes, setQuotes] = useState<Quote[]>(demo ? SEED_QUOTES : []);
+  const [briefStats, setBriefStats] = useState<BriefStats>({
+    newLeadsNeedReply: 0,
+    quotesToFollowUp: 0,
+    reviewRequestsReady: REVIEW_REQUESTS_READY,
+    maintenanceDue: MAINTENANCE_DUE_COUNT,
+    estimatedOpenRevenue: BASE_OPEN_REVENUE,
+  });
+  const [briefActions, setBriefActions] = useState<BriefAction[]>([]);
+  const [loading, setLoading] = useState(!demo);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiLive, setAiLive] = useState<boolean | null>(null);
+
+  const refresh = useCallback(async () => {
+    if (demo) return;
+    setLoading(true);
+    try {
+      const [leadsRes, quotesRes, briefRes] = await Promise.all([
+        fetch("/api/leads"),
+        fetch("/api/quotes"),
+        fetch("/api/brief"),
+      ]);
+      if (leadsRes.ok) {
+        const d = await leadsRes.json();
+        setLeads(sortLeads(d.leads || []));
+      }
+      if (quotesRes.ok) {
+        const d = await quotesRes.json();
+        setQuotes(d.quotes || []);
+      }
+      if (briefRes.ok) {
+        const d = await briefRes.json();
+        setBriefStats(d.stats);
+        setBriefActions(d.actions || []);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [demo]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   const getLead = useCallback(
     (id: string) => leads.find((l) => l.id === id),
     [leads],
   );
 
-  const createLead = useCallback((input: CreateLeadInput): Lead => {
-    const lead: Lead = {
-      id: generateId("lead"),
-      customerName: input.customerName || "New lead",
-      location: "Southwest Florida",
-      channel: input.channel || "website_form",
-      label: "hot_lead",
-      status: "new",
-      rawMessage: input.rawMessage,
-      createdAt: new Date().toISOString(),
-    };
-    setLeads((prev) => sortLeads([lead, ...prev]));
-    return lead;
-  }, []);
-
-  const analyzeMessage = useCallback(
-    async (message: string, customerName?: string): Promise<LeadAnalysis> => {
-      setIsAnalyzing(true);
-      try {
-        const result = await analyzeLead(message, customerName);
-        setAiLive(result.live);
-        return result.analysis;
-      } finally {
-        setIsAnalyzing(false);
+  const createLead = useCallback(
+    async (input: CreateLeadInput): Promise<Lead> => {
+      if (demo) {
+        const lead: Lead = {
+          id: `lead-${Date.now()}`,
+          customerName: input.customerName || "New lead",
+          location: "Southwest Florida",
+          channel: input.channel || "website_form",
+          label: "hot_lead",
+          status: "new",
+          rawMessage: input.rawMessage,
+          createdAt: new Date().toISOString(),
+        };
+        setLeads((prev) => sortLeads([lead, ...prev]));
+        return lead;
       }
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      const data = await res.json();
+      await refresh();
+      return data.lead;
     },
-    [],
+    [demo, refresh],
   );
 
   const analyzeLeadById = useCallback(
@@ -114,156 +154,162 @@ export function LeadStoreProvider({ children }: { children: ReactNode }) {
     ) => {
       setIsAnalyzing(true);
       try {
-        let rawMessage = override?.rawMessage ?? "";
-        let customerName = override?.customerName ?? "";
-        if (!rawMessage) {
-          const found = leads.find((l) => l.id === id);
-          if (!found) return;
-          rawMessage = found.rawMessage;
-          customerName = found.customerName;
-        }
-
-        const result = await analyzeLead(rawMessage, customerName);
-        setAiLive(result.live);
-        const summary = result.analysis;
-        setLeads((prev) =>
-          sortLeads(
-            prev.map((l) =>
-              l.id === id
-                ? {
-                    ...l,
-                    summary,
-                    label: summary.label,
-                    customerName: summary.customer,
-                    location: summary.location,
-                    status: l.status === "new" ? "summarized" : l.status,
-                  }
-                : l,
+        if (demo) {
+          const { analyzeLead } = await import("@/lib/ai/analyze-lead");
+          const msg =
+            override?.rawMessage ||
+            leads.find((l) => l.id === id)?.rawMessage ||
+            "";
+          const result = await analyzeLead(msg, override?.customerName);
+          setAiLive(result.live);
+          setLeads((prev) =>
+            sortLeads(
+              prev.map((l) =>
+                l.id === id
+                  ? {
+                      ...l,
+                      summary: result.analysis,
+                      label: result.analysis.label,
+                      customerName: result.analysis.customer,
+                      location: result.analysis.location,
+                      status: "summarized",
+                    }
+                  : l,
+              ),
             ),
-          ),
-        );
+          );
+          return;
+        }
+        const res = await fetch(`/api/leads/${id}/analyze`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(override || {}),
+        });
+        const data = await res.json();
+        setAiLive(data.live ?? false);
+        await refresh();
       } finally {
         setIsAnalyzing(false);
       }
     },
-    [leads],
+    [demo, leads, refresh],
   );
 
-  const sendReply = useCallback((id: string) => {
-    setLeads((prev) =>
-      prev.map((l) =>
-        l.id === id ? { ...l, status: "replied" as const } : l,
-      ),
-    );
-  }, []);
+  const sendReply = useCallback(
+    async (id: string) => {
+      if (demo) {
+        setLeads((prev) =>
+          prev.map((l) =>
+            l.id === id ? { ...l, status: "replied" as const } : l,
+          ),
+        );
+        return;
+      }
+      await fetch(`/api/leads/${id}/send`, { method: "POST" });
+      await refresh();
+    },
+    [demo, refresh],
+  );
 
-  const markReadyToBook = useCallback((id: string) => {
-    setLeads((prev) =>
-      prev.map((l) =>
-        l.id === id
-          ? { ...l, status: "ready_to_book" as const, label: "hot_lead" as const }
-          : l,
-      ),
-    );
-  }, []);
+  const markReadyToBook = useCallback(
+    async (id: string) => {
+      if (demo) {
+        setLeads((prev) =>
+          prev.map((l) =>
+            l.id === id
+              ? { ...l, status: "ready_to_book" as const, label: "hot_lead" }
+              : l,
+          ),
+        );
+        return;
+      }
+      await fetch(`/api/leads/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "ready_to_book", label: "hot_lead" }),
+      });
+      await refresh();
+    },
+    [demo, refresh],
+  );
 
-  const createQuote = useCallback((input: CreateQuoteInput): Quote => {
-    const quote: Quote = {
-      id: generateId("quote"),
-      leadId: input.leadId,
-      customerName: input.customerName,
-      job: input.job,
-      amount: input.amount,
-      status: "Sent just now",
-      aiAction: "Wait 24 hrs",
-      followUpDraft: `Hi ${input.customerName.split(" ")[0]}, here's your quote for ${input.job.toLowerCase()}. Let us know if you have any questions!`,
-      sentAt: new Date().toISOString(),
-    };
-    setQuotes((prev) => [quote, ...prev]);
-    setLeads((prev) =>
-      prev.map((l) =>
-        l.id === input.leadId ? { ...l, status: "quoted" as const } : l,
-      ),
-    );
-    return quote;
-  }, []);
+  const createQuote = useCallback(
+    async (input: CreateQuoteInput): Promise<Quote> => {
+      if (demo) {
+        const quote: Quote = {
+          id: `quote-${Date.now()}`,
+          leadId: input.leadId,
+          customerName: input.customerName,
+          job: input.job,
+          amount: input.amount,
+          status: "Sent just now",
+          aiAction: "Wait 24 hrs",
+          followUpDraft: `Hi ${input.customerName.split(" ")[0]}, here's your quote for ${input.job.toLowerCase()}.`,
+          sentAt: new Date().toISOString(),
+        };
+        setQuotes((prev) => [quote, ...prev]);
+        setLeads((prev) =>
+          prev.map((l) =>
+            l.id === input.leadId ? { ...l, status: "quoted" } : l,
+          ),
+        );
+        return quote;
+      }
+      const res = await fetch("/api/quotes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      const data = await res.json();
+      await refresh();
+      return data.quote;
+    },
+    [demo, refresh],
+  );
 
-  const briefStats = useMemo((): BriefStats => {
+  const sendQuoteFollowUp = useCallback(
+    async (quoteId: string) => {
+      if (demo) return;
+      await fetch(`/api/quotes/${quoteId}/send`, { method: "POST" });
+      await refresh();
+    },
+    [demo, refresh],
+  );
+
+  const demoBrief = useMemo(() => {
+    if (!demo) return null;
     const newLeadsNeedReply = leads.filter(
       (l) => l.status === "new" || l.status === "summarized",
     ).length;
     const quotesToFollowUp = quotes.filter((q) =>
-      q.aiAction.toLowerCase().includes("follow up"),
+      quoteAiAction(q.sentAt).toLowerCase().includes("follow up"),
     ).length;
-    const newQuoteRevenue = quotes
-      .filter((q) => q.status === "Sent just now")
-      .reduce((sum, q) => sum + q.amount, 0);
-
     return {
-      newLeadsNeedReply,
-      quotesToFollowUp,
-      reviewRequestsReady: REVIEW_REQUESTS_READY,
-      maintenanceDue: MAINTENANCE_DUE_COUNT,
-      estimatedOpenRevenue: BASE_OPEN_REVENUE + newQuoteRevenue,
+      stats: {
+        newLeadsNeedReply,
+        quotesToFollowUp,
+        reviewRequestsReady: REVIEW_REQUESTS_READY,
+        maintenanceDue: MAINTENANCE_DUE_COUNT,
+        estimatedOpenRevenue: BASE_OPEN_REVENUE,
+      } as BriefStats,
+      actions: [] as BriefAction[],
     };
-  }, [leads, quotes]);
-
-  const briefActions = useMemo((): BriefAction[] => {
-    const actions: BriefAction[] = [];
-
-    leads
-      .filter((l) => l.status === "new" || l.status === "summarized")
-      .slice(0, 3)
-      .forEach((l) => {
-        actions.push({
-          id: `action-lead-${l.id}`,
-          text: `Reply to ${l.customerName} — ${l.summary?.service ?? "new lead"}`,
-          href: `/dashboard/leads/${l.id}`,
-          priority: l.label === "emergency" ? "high" : "medium",
-        });
-      });
-
-    quotes
-      .filter((q) => q.aiAction.toLowerCase().includes("follow up"))
-      .slice(0, 2)
-      .forEach((q) => {
-        actions.push({
-          id: `action-quote-${q.id}`,
-          text: `Follow up with ${q.customerName} on ${q.job} (${q.status})`,
-          href: q.leadId ? `/dashboard/leads/${q.leadId}` : "/dashboard/quotes",
-          priority: "high",
-        });
-      });
-
-    actions.push({
-      id: "action-review",
-      text: "Send review request to Karen S. (job completed last week)",
-      href: "/dashboard/leads/lead-11",
-      priority: "low",
-    });
-
-    actions.push({
-      id: "action-maintenance",
-      text: "4 past customers due for annual maintenance",
-      href: "/dashboard/inbox?filter=past_customer",
-      priority: "medium",
-    });
-
-    return actions;
-  }, [leads, quotes]);
+  }, [demo, leads, quotes]);
 
   const value: LeadStoreValue = {
     leads,
     quotes,
+    loading,
+    refresh,
     getLead,
     createLead,
     analyzeLeadById,
-    analyzeMessage,
     sendReply,
     markReadyToBook,
     createQuote,
-    briefStats,
-    briefActions,
+    sendQuoteFollowUp,
+    briefStats: demo ? demoBrief!.stats : briefStats,
+    briefActions: demo ? demoBrief!.actions : briefActions,
     isAnalyzing,
     aiLive,
   };

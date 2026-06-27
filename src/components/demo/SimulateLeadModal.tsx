@@ -24,10 +24,11 @@ export function SimulateLeadModal({ open, onClose }: SimulateLeadModalProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    const lead = createLead({
+    const lead = await createLead({
       rawMessage: message,
       customerName,
       channel: "website_form",
+      smsConsent: true,
     });
     onClose();
     router.push(`/dashboard/leads/${lead.id}`);

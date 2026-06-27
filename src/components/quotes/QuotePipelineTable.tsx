@@ -5,11 +5,7 @@ import { useLeadStore } from "@/context/LeadStore";
 import { money } from "@/lib/format";
 
 export function QuotePipelineTable() {
-  const { quotes } = useLeadStore();
-
-  async function copyFollowUp(text: string) {
-    await navigator.clipboard.writeText(text);
-  }
+  const { quotes, sendQuoteFollowUp } = useLeadStore();
 
   return (
     <div className="panel overflow-hidden">
@@ -63,10 +59,10 @@ export function QuotePipelineTable() {
                   {quote.followUpDraft && (
                     <button
                       type="button"
-                      onClick={() => copyFollowUp(quote.followUpDraft!)}
+                      onClick={() => sendQuoteFollowUp(quote.id)}
                       className="text-left text-xs text-[var(--geist-accent)] hover:underline"
                     >
-                      Copy message
+                      Send follow-up
                     </button>
                   )}
                 </div>

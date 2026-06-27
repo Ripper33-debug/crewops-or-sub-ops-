@@ -36,12 +36,15 @@ export interface LeadAnalysis {
 export interface Lead {
   id: string;
   customerName: string;
+  phone?: string;
   location: string;
   channel: LeadChannel;
   label: LeadLabel;
   status: LeadStatus;
   rawMessage: string;
   summary?: LeadAnalysis;
+  smsConsentAt?: string;
+  doNotContact?: boolean;
   createdAt: string;
 }
 
@@ -55,6 +58,7 @@ export interface Quote {
   aiAction: string;
   followUpDraft?: string;
   sentAt: string;
+  lastFollowUpAt?: string;
 }
 
 export interface BriefStats {
@@ -76,6 +80,8 @@ export interface CreateLeadInput {
   rawMessage: string;
   channel?: LeadChannel;
   customerName?: string;
+  phone?: string;
+  smsConsent?: boolean;
 }
 
 export interface CreateQuoteInput {

@@ -68,7 +68,7 @@ export function LeadDetail({ lead }: LeadDetailProps) {
               {lead.status !== "replied" && lead.status !== "quoted" && (
                 <button
                   type="button"
-                  onClick={() => sendReply(lead.id)}
+                  onClick={() => void sendReply(lead.id)}
                   className="btn-primary"
                 >
                   Send reply
@@ -77,7 +77,7 @@ export function LeadDetail({ lead }: LeadDetailProps) {
               {lead.status === "replied" && (
                 <button
                   type="button"
-                  onClick={() => markReadyToBook(lead.id)}
+                  onClick={() => void markReadyToBook(lead.id)}
                   className="btn-secondary"
                 >
                   Ready to book
@@ -133,13 +133,12 @@ export function LeadDetail({ lead }: LeadDetailProps) {
               <button
                 type="button"
                 onClick={() => {
-                  createQuote({
+                  void createQuote({
                     leadId: lead.id,
                     customerName: lead.customerName,
                     job: summary.service,
                     amount: quoteAmount,
-                  });
-                  setShowQuoteModal(false);
+                  }).then(() => setShowQuoteModal(false));
                 }}
                 className="btn-primary"
               >

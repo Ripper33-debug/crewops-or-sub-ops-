@@ -25,8 +25,11 @@ export default function LandingPage() {
           brief on open revenue. Built for operators running 1–10 person crews.
         </p>
         <div className="mt-8">
-          <Link href="/login" className="btn-primary">
-            Open demo
+          <Link href="/signup" className="btn-primary">
+            Get started
+          </Link>
+          <Link href="/login" className="btn-ghost ml-3">
+            Sign in
           </Link>
         </div>
 
@@ -74,7 +77,14 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-[var(--geist-border)] py-6 text-center text-xs text-[var(--geist-foreground-secondary)]">
-        CrewPilot
+        CrewPilot ·{" "}
+        <Link href="/privacy" className="hover:underline">
+          Privacy
+        </Link>
+        {" · "}
+        <Link href="/terms" className="hover:underline">
+          Terms
+        </Link>
       </footer>
     </div>
   );

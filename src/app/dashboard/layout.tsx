@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { LeadStoreProvider, useLeadStore } from "@/context/LeadStore";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { SubscriptionGate } from "@/components/layout/SubscriptionGate";
 import { SimulateLeadModal } from "@/components/demo/SimulateLeadModal";
 import { IconPlus } from "@/components/ui/Icons";
 import { money } from "@/lib/format";
@@ -15,11 +16,7 @@ function TopBar({ onSimulate }: { onSimulate: () => void }) {
     <div className="flex items-center justify-between border-b border-[var(--geist-border)] px-5 py-2.5">
       <div className="flex items-center gap-4 text-xs text-[var(--geist-foreground-secondary)]">
         <span>{leads.length} leads</span>
-        {urgent > 0 && (
-          <span className="text-[var(--geist-foreground)]">
-            {urgent} emergency
-          </span>
-        )}
+        {urgent > 0 && <span>{urgent} emergency</span>}
         <span className="font-mono tabular-nums">
           {money(briefStats.estimatedOpenRevenue)} open
         </span>
@@ -41,9 +38,11 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <TopBar onSimulate={() => setModalOpen(true)} />
-          <main id="main-content" className="flex-1 overflow-auto">
-            {children}
-          </main>
+          <SubscriptionGate>
+            <main id="main-content" className="flex-1 overflow-auto">
+              {children}
+            </main>
+          </SubscriptionGate>
         </div>
       </div>
       <SimulateLeadModal open={modalOpen} onClose={() => setModalOpen(false)} />
